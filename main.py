@@ -8,7 +8,7 @@ def euclidian_distance(x1, x2):
         distance_sqaured += (x1[i]-x2[i])**2
     distance = sqrt(distance_sqaured)
     return distance
-    
+
 def leave_one_out_cross_validation(data):
     n = data.shape[0] 
     number_correctly_classified = 0 
@@ -33,15 +33,17 @@ def leave_one_out_cross_validation(data):
 
 def forward_selection(data):
     start_time = time.time()
-    print("Forward Selection")
     n_features = data.shape[1] - 1  # Gets the number of features (excluding the class label in column 0)
     current_set_of_features = []  # Initialize the current empty set
     best_accuracy_so_far = 0  
     best_feature_set = None
 
-    best_accuracy_so_far = leave_one_out_cross_validation(data[:, [0] + current_set_of_features]) 
+    print("Accuracy using only the empty set:")
+    best_accuracy_so_far = leave_one_out_cross_validation(data[:, [0]]) 
     print(f"Using feature(s) {current_set_of_features} accuracy is: {best_accuracy_so_far}")
+
     print()
+    print("Forward Selection starting now..")
     
     for i in range(n_features): 
         best_accuracy_for_current_level = 0  
@@ -73,54 +75,55 @@ def forward_selection(data):
             best_feature_set = current_set_of_features.copy()
 
     print(f'Finished search: Best feature set is {best_feature_set} with an accuracy of {best_accuracy_so_far}')
-    end_time = time.time()  # End timing
-    print(f"Time taken for Backward Selection: {end_time - start_time:.4f} seconds\n")
+
+    end_time = time.time()  
+    print(f"Time taken for Forward Selection: {end_time - start_time:.4f} seconds\n")
     return current_set_of_features
 
 
 def backward_elimination(data):
     start_time = time.time()
-    print("Backward Elimination")
-    
     n_features = data.shape[1] - 1
-    current_set_of_features = list(range(1, n_features + 1))
+    current_set_of_features = list(range(1, n_features + 1)) #full feature set
     best_accuracy_so_far = 0
     best_feature_set = current_set_of_features.copy()
     
-    best_accuracy_so_far = leave_one_out_cross_validation(data[:, [0] + current_set_of_features]) 
+    print("Accuracy with the full feature set")
+    best_accuracy_so_far = leave_one_out_cross_validation(data[:, [0] + current_set_of_features]) #calculates accuracy of full feature set
     print(f"Using feature(s) {current_set_of_features} accuracy is: {best_accuracy_so_far}")
     print()
-    
-    for i in range(n_features - 1):
+    print("Backward elimination starting now...")
+
+    for i in range(n_features):
         best_accuracy_for_current_level = 0
         feature_to_remove = None
         for feature in current_set_of_features:
-            temp_feature_set = current_set_of_features.copy()
+            temp_feature_set = current_set_of_features.copy() # created temp set to remove each feature
             temp_feature_set.remove(feature)
             
             selected_data = data[:, [0] + temp_feature_set]  # Select data corresponding to the selected features
             accuracy = leave_one_out_cross_validation(selected_data)  # Evaluate model with these features
             print(f"Using feature(s) {temp_feature_set} accuracy is: {accuracy}")
-            print()        
+            print()
             
             if accuracy > best_accuracy_for_current_level:  # Updating best_accuracy at the current level
                 best_accuracy_for_current_level = accuracy
                 feature_to_remove = feature  
-                
+        
         if feature_to_remove is not None:
-            current_set_of_features.remove(feature_to_remove)  # Add the best feature to the selected set
+            current_set_of_features.remove(feature_to_remove)  # Remove the feature
             print()
             print(f"Feature set {current_set_of_features} was best, {best_accuracy_for_current_level}")
             print()
 
-        if best_accuracy_for_current_level > best_accuracy_so_far:
+        if best_accuracy_for_current_level > best_accuracy_so_far: #Updates the best feature set to get the feature set with the highest accuracy
             best_accuracy_so_far = best_accuracy_for_current_level
             best_feature_set = current_set_of_features.copy()
-                
+    
     print(f'Finished search: Best feature set is {best_feature_set} with an accuracy of {best_accuracy_so_far}')
 
     end_time = time.time() 
-    print(f"Time taken for Forward Selection: {end_time - start_time:.4f} seconds\n")
+    print(f"Time taken for Backward Elimination: {end_time - start_time:.4f} seconds\n")
     return best_feature_set
     
 def get_user_choice():
@@ -129,10 +132,10 @@ def get_user_choice():
     ).strip()
 
     if choice == '1':
-        print("\nYou selected Forward Selection. Starting the process...\n")
+        print("\nYou selected Forward Selection.\n")
         return choice
     elif choice == '2':
-        print("\nYou selected Backward Elimination. Starting the process...\n")
+        print("\nYou selected Backward Elimination.\n")
         return choice
     else:
         print("Invalid input. Please enter '1' or '2'.")
@@ -143,29 +146,25 @@ if __name__ == "__main__":
     print("Welcome to my Feature Selection Algorithm!")
     print()
     filename = input("Type the name of the file to test: ")
-    
+    print()
     data = np.loadtxt(filename)
     
     num_rows = data.shape[0] 
     num_features = data.shape[1] - 1 
-    
+    print(f"This file has {num_features} features and {num_rows} instances.")
+
     print()
     print("Which feature selection method would you like to use?")
     print("1) Forward Selection")
     print("2) Backward Elimination")
     print()
-    print(f"This file has {num_features} features and {num_rows} instances.")
-    print()
     user_choice = get_user_choice()
 
     if user_choice == '1':
         selected_features = forward_selection(data)
+        
     elif user_choice == '2':
         selected_features = backward_elimination(data)
-
-    
-
-    
  
 
     
