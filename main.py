@@ -28,7 +28,7 @@ def leave_one_out_cross_validation(data):
                 nearest_neighbor_label = data[k, 0]
         if classfication_label == nearest_neighbor_label:
             number_correctly_classified += 1
-    accuracy = number_correctly_classified/n
+    accuracy = (number_correctly_classified/n)*100
     return accuracy
 
 def forward_selection(data):
@@ -38,13 +38,12 @@ def forward_selection(data):
     best_accuracy_so_far = 0  
     best_feature_set = None
 
-    print("Accuracy using only the empty set:")
+    print("Running nearest neighbor with no features, using “leaving-one-out” evaluation, I get an accuracy of")
     best_accuracy_so_far = leave_one_out_cross_validation(data[:, [0]]) 
-    print(f"Using feature(s) {current_set_of_features} accuracy is: {best_accuracy_so_far:.3f}")
+    print(f"{best_accuracy_so_far:.1f}%")
 
     print()
-    print("Forward Selection starting now..")
-    
+    print("Beginning search.")
     for i in range(n_features): 
         best_accuracy_for_current_level = 0  
         feature_to_add = None  
@@ -57,7 +56,7 @@ def forward_selection(data):
 
                 selected_data = data[:, temp_feature_set]  # Select data corresponding to the selected features
                 accuracy = leave_one_out_cross_validation(selected_data)  # Evaluate model with these features
-                print(f"Using feature(s) {current_set_of_features + [feature]} accuracy is: {accuracy:.3f}")
+                print(f"Using feature(s) {current_set_of_features + [feature]} accuracy is: {accuracy:.1f}%", end=" ")
                 print()
                 if accuracy > best_accuracy_for_current_level:  # Updating best_accuracy at the current level
                     best_accuracy_for_current_level = accuracy
@@ -67,14 +66,14 @@ def forward_selection(data):
         if feature_to_add is not None:
             current_set_of_features.append(feature_to_add)  # Add the best feature to the selected set
             print()
-            print(f"Feature set {current_set_of_features} was best, {best_accuracy_for_current_level:.3f}")
+            print(f"Feature set {current_set_of_features} was best, {best_accuracy_for_current_level:.1f}%")
             print()
 
         if best_accuracy_for_current_level > best_accuracy_so_far:
             best_accuracy_so_far = best_accuracy_for_current_level
             best_feature_set = current_set_of_features.copy()
 
-    print(f'Finished search: Best feature set is {best_feature_set} with an accuracy of {best_accuracy_so_far:.3f}')
+    print(f'Finished search!! The best feature subset is {best_feature_set} which has an accuracy of {best_accuracy_so_far:.1f}%')
 
     end_time = time.time()  
     print(f"Time taken for Forward Selection: {end_time - start_time:.2f} seconds\n")
@@ -88,11 +87,11 @@ def backward_elimination(data):
     best_accuracy_so_far = 0
     best_feature_set = current_set_of_features.copy()
     
-    print("Accuracy with the full feature set")
+    print("Running nearest neighbor with all 6 features, using “leaving-one-out” evaluation, I get an accuracy of")
     best_accuracy_so_far = leave_one_out_cross_validation(data[:, [0] + current_set_of_features]) #calculates accuracy of full feature set
-    print(f"Using feature(s) {current_set_of_features} accuracy is: {best_accuracy_so_far:.3f}")
+    print(f"{best_accuracy_so_far:.1f}%")
     print()
-    print("Backward elimination starting now...")
+    print("Beginning Search.")
 
     for i in range(n_features):
         best_accuracy_for_current_level = 0
@@ -103,7 +102,7 @@ def backward_elimination(data):
             
             selected_data = data[:, [0] + temp_feature_set]  # Select data corresponding to the selected features
             accuracy = leave_one_out_cross_validation(selected_data)  # Evaluate model with these features
-            print(f"Using feature(s) {temp_feature_set} accuracy is: {accuracy:.3f}")
+            print(f"Using feature(s) {temp_feature_set} accuracy is: {accuracy:.1f}%", end=" ")
             print()
             
             if accuracy > best_accuracy_for_current_level:  # Updating best_accuracy at the current level
@@ -113,14 +112,14 @@ def backward_elimination(data):
         if feature_to_remove is not None:
             current_set_of_features.remove(feature_to_remove)  # Remove the feature
             print()
-            print(f"Feature set {current_set_of_features} was best, {best_accuracy_for_current_level:.3f}")
+            print(f"Feature set {current_set_of_features} was best, {best_accuracy_for_current_level:.1f}%")
             print()
 
         if best_accuracy_for_current_level > best_accuracy_so_far: #Updates the best feature set to get the feature set with the highest accuracy
             best_accuracy_so_far = best_accuracy_for_current_level
             best_feature_set = current_set_of_features.copy()
     
-    print(f'Finished search: Best feature set is {best_feature_set} with an accuracy of {best_accuracy_so_far:.3f}')
+    print(f'Finished search!! The best feature subset is {best_feature_set} which has an accuracy of {best_accuracy_so_far:.1f}%')
 
     end_time = time.time() 
     print(f"Time taken for Backward Elimination: {end_time - start_time:.2f} seconds\n")
@@ -132,10 +131,8 @@ def get_user_choice():
     ).strip()
 
     if choice == '1':
-        print("\nYou selected Forward Selection.\n")
         return choice
     elif choice == '2':
-        print("\nYou selected Backward Elimination.\n")
         return choice
     else:
         print("Invalid input. Please enter '1' or '2'.")
@@ -143,15 +140,15 @@ def get_user_choice():
 
 
 if __name__ == "__main__":
-    print("Welcome to my Feature Selection Algorithm!")
+    print("Welcome to Shreya Mohan's Feature Selection Algorithm")
     print()
-    filename = input("Type the name of the file to test: ")
+    filename = input("Type in the name of the file to test : ")
     print()
     data = np.loadtxt(filename)
     
     num_rows = data.shape[0] 
     num_features = data.shape[1] - 1 
-    print(f"This file has {num_features} features and {num_rows} instances.")
+    print(f"This file has {num_features} features (not including the class attribute), with {num_rows} instances.")
 
     print()
     print("Which feature selection method would you like to use?")
